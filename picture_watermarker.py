@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
-import os, shutil, argparse, sys
+import os, shutil, argparse, sys, re
 
 class PictureOrganizer:
     # Organizes pictures in directory
@@ -71,7 +71,7 @@ class PictureOrganizer:
         return self.picture_file_prefix + '-' + str(picture_number) + '-' + str(index) + self.file_extension
 
     def image_files_in_directory(self, directory):
-        return filter(lambda file_name: file_name.endswith('.jpg'), os.listdir(directory))
+        return filter(lambda file_name: file_name.endswith('jpg'), os.listdir(directory))
 
 class PictureWatermarker:
     # WatermarkPictures with number
@@ -110,7 +110,7 @@ class PictureWatermarker:
         image_files = [i for i in all_files if i.endswith('.jpg') and i.startswith(self.picture_file_prefix)]
         if not os.path.exists('export'):
             os.makedirs('export')
-        for image_name in image_files:
+        for image_name in sorted(image_files):
             print "Processing image: " + image_name
             watermark = self.watermark_number(image_name)
             self.process_image(image_name, watermark)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         organizer = PictureOrganizer(
             directory = args.dir,
             picture_file_prefix = args.file_prefix,
-            file_extension = args.image_extension,
+            file_extension = '.' + args.image_extension,
             options={
                 'picture_start_number': args.picture_start_number[0],
                 'picture_end_number': args.picture_end_number[0]
