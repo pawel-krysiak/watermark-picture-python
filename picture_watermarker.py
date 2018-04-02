@@ -82,19 +82,21 @@ class PictureWatermarker:
     #   2.2 Applies the watermark to the picture with given number
     #   2.3 Saves picture in export directory
 
-    def __init__(self, directory='./', picture_file_prefix='material'):
+    def __init__(self, directory='./', picture_file_prefix='material', footer=None):
         self.directory = directory
         self.picture_file_prefix = picture_file_prefix
+        self.footer = footer
 
-    def process_image(self, image_name, number):
+    def process_image(self, image_file, number):
         # Watermark picture with number
-        font = ImageFont.truetype("SignPainter.ttf", 85)
-        main = Image.open(image_name)
+        main = Image.open(image_file)
         watermark = Image.new("RGBA", main.size)
         waterdraw = ImageDraw.ImageDraw(watermark, "RGBA")
-        waterdraw.text((40, 40), str(number), font=font)
+        waterdraw.text((40, 40), str(number), font=ImageFont.truetype("SignPainter.ttf", 85))
+        if self.footer:
+            waterdraw.text((1125, 980), self.footer, font=ImageFont.truetype("SignPainter.ttf", 65))
         main.paste(watermark, None, watermark)
-        main.save("export/" + image_name, "JPEG")
+        main.save("export/" + image_file, "JPEG")
 
     def watermark_number(self, file_name):
         # choose middle number from file name
@@ -110,10 +112,10 @@ class PictureWatermarker:
         image_files = [i for i in all_files if i.endswith('.jpg') and i.startswith(self.picture_file_prefix)]
         if not os.path.exists('export'):
             os.makedirs('export')
-        for image_name in sorted(image_files):
-            print "Processing image: " + image_name
-            watermark = self.watermark_number(image_name)
-            self.process_image(image_name, watermark)
+        for image_file in sorted(image_files):
+            print "Processing image: " + image_file
+            watermark = self.watermark_number(image_file)
+            self.process_image(image_file, watermark)
         print 'Watermarked ' + str(len(image_files)) + ' files.'
 
 
@@ -124,6 +126,7 @@ if __name__ == "__main__":
     parser.add_argument('--dir', metavar='D', nargs='?', help='images directory', default='./')
     parser.add_argument('--file_prefix', metavar='prefix', nargs='?', help='picture file prefix. i.e: material', default='material')
     parser.add_argument('--image_extension', metavar='ext', nargs='?', help='pictures extension. i.e: .jpg', default='jpg', choices=['jpg', 'png'])
+    parser.add_argument('--footer', metavar='footer', nargs='?', help='image footer i.e: www.example.com')
 
     args = parser.parse_args()
 
@@ -146,10 +149,15 @@ if __name__ == "__main__":
         )
         organizer.organize()
 
-        watermark = PictureWatermarker(
-            directory = args.dir,
-            picture_file_prefix = args.file_prefix
-        )
+        watermarker_args = {
+            'directory': args.dir,
+            'picture_file_prefix': args.file_prefix
+        }
+
+        if args.footer:
+            watermarker_args['footer'] = args.footer
+
+        watermark = PictureWatermarker(**watermarker_args)
         watermark.call()
     else:
         sys.exit()
