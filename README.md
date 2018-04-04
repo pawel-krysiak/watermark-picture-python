@@ -1,6 +1,5 @@
 # Watermark Picture - Python
-
-Adds the number on the picture with choosen font.
+Small project that simplifies the process of grouping and watermarking pictures.
 
 # Dependencies
 * [PIL] - Python Imaging Library
