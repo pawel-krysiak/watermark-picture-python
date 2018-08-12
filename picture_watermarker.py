@@ -82,14 +82,19 @@ class PictureWatermarker:
     #   2.2 Applies the watermark to the picture with given number
     #   2.3 Saves picture in export directory
 
-    def __init__(self, directory='./', picture_file_prefix='material', footer=None):
+    def __init__(self, directory='./', picture_file_prefix='material', resize_to=1600, footer=None):
         self.directory = directory
         self.picture_file_prefix = picture_file_prefix
+        self.resize_to = resize_to
         self.footer = footer
 
     def process_image(self, image_file, number):
         # Watermark picture with number
         main = Image.open(image_file)
+        if self.resize_to
+            wpercent = (self.resize_to/float(main.size[0]))
+            hsize = int((float(main.size[1])*float(wpercent)))
+            main = main.resize((self.resize_to,hsize), Image.ANTIALIAS)
         watermark = Image.new("RGBA", main.size)
         waterdraw = ImageDraw.ImageDraw(watermark, "RGBA")
         waterdraw.text((40, 40), str(number), font=ImageFont.truetype("SignPainter.ttf", 85))
@@ -120,6 +125,14 @@ class PictureWatermarker:
 
 
 if __name__ == "__main__":
+    def str2bool(v):
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
     parser = argparse.ArgumentParser(description='Picture Watermarker')
     parser.add_argument('picture_start_number', metavar='start', nargs=1, help='picture start number i.e 1', type=int)
     parser.add_argument('picture_end_number', metavar='end', nargs=1, help='picture start number i.e 29', type=int)
@@ -127,7 +140,8 @@ if __name__ == "__main__":
     parser.add_argument('--file_prefix', metavar='prefix', nargs='?', help='picture file prefix. i.e: material', default='material')
     parser.add_argument('--image_extension', metavar='ext', nargs='?', help='pictures extension. i.e: .jpg', default='jpg', choices=['jpg', 'png'])
     parser.add_argument('--footer', metavar='footer', nargs='?', help='image footer i.e: www.example.com')
-
+    parser.add_argument("--just_watermark", metavar='just_watermark', type=str2bool, nargs='?', const=True, default=False, help="Do not organize pictures, just watermark them")
+    parser.add_argument("--resize_to", metavar='resize_to', type=int, nargs='?', default=1600, help="Resize pictures to desired width maintaining ratio")
     args = parser.parse_args()
 
     print "-- Picture Watermarker v1.0 --"
@@ -138,20 +152,22 @@ if __name__ == "__main__":
     answer = raw_input('\nProceed with presented arguments? [y\\n]')
     if answer.strip().lower() == 'y':
         print args
-        organizer = PictureOrganizer(
-            directory = args.dir,
-            picture_file_prefix = args.file_prefix,
-            file_extension = '.' + args.image_extension,
-            options={
-                'picture_start_number': args.picture_start_number[0],
-                'picture_end_number': args.picture_end_number[0]
-            }
-        )
-        organizer.organize()
+        if not args.just_watermark
+            organizer = PictureOrganizer(
+                directory = args.dir,
+                picture_file_prefix = args.file_prefix,
+                file_extension = '.' + args.image_extension,
+                options={
+                    'picture_start_number': args.picture_start_number[0],
+                    'picture_end_number': args.picture_end_number[0]
+                }
+            )
+            organizer.organize()
 
         watermarker_args = {
             'directory': args.dir,
-            'picture_file_prefix': args.file_prefix
+            'picture_file_prefix': args.file_prefix,
+            'resize_to': args.resize_to,
         }
 
         if args.footer:
