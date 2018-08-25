@@ -91,7 +91,7 @@ class PictureWatermarker:
     def process_image(self, image_file, number):
         # Watermark picture with number
         main = Image.open(image_file)
-        if self.resize_to
+        if self.resize_to:
             wpercent = (self.resize_to/float(main.size[0]))
             hsize = int((float(main.size[1])*float(wpercent)))
             main = main.resize((self.resize_to,hsize), Image.ANTIALIAS)
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     answer = raw_input('\nProceed with presented arguments? [y\\n]')
     if answer.strip().lower() == 'y':
         print args
-        if not args.just_watermark
+        if not args.just_watermark:
             organizer = PictureOrganizer(
                 directory = args.dir,
                 picture_file_prefix = args.file_prefix,
